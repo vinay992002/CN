@@ -29,7 +29,7 @@ main(){
 	int *ppid = (int *)shmat(shmid,NULL,0);
 	*ppid = getpid();
 	mkfifo("sfifo",0666);
-	struct pollfd fds[4];
+	struct pollfd fds[3];
 	int ffd = open("sfifo",O_RDONLY);
 	pipe(pfd);	
 	fds[0].fd = pfd[0];
@@ -39,10 +39,10 @@ main(){
 	FILE *f;
 	f = popen("./spopen","r");
 	fds[2].fd = fileno(f);
-	fds[3].fd = fileno(stdin);
-	fds[3].events = POLLIN;
+	//fds[3].fd = fileno(stdin);
+	//fds[3].events = POLLIN;
 	int i=0;
-	for(i=0;i<4;i++){
+	for(i=0;i<3;i++){
 		fds[i].events = POLLIN;
 	} 
 	
@@ -62,9 +62,9 @@ main(){
 		
 		while(1){
 			
-			int ret = poll(fds,4,500);
+			int ret = poll(fds,3,500);
 			if(ret>0){
-				for( i=0;i<4;i++){
+				for( i=0;i<3;i++){
 					if(fds[i].revents & POLLIN){
 						break;
 					}
@@ -80,9 +80,7 @@ main(){
 				else if(i==2){
 					sprintf(buf1,"%s","popen: ");
 				}
-				else{
-					sprintf(buf1,"%s","stdin : ");
-				}
+				
 				char buf[1024];
 				read(fds[i].fd,buf,1024);
 				char outpu[1024];

@@ -18,7 +18,7 @@ main(int argc,char *argv[])
 	int pid;
 	char sfifo[32]="msfifo";
 	 char name[32];
-	while(1)ServiceCordinator
+	while(1)
 	{
 	char num[5];
 	read(fd,num,5);

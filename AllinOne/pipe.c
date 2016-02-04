@@ -3,5 +3,5 @@
 
 main(){
 	char buf[1024];
-	printf("Connection with popen succesful\n");
+	printf("Connection with pipe succesful\n");
 }
