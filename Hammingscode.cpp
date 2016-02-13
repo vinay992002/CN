@@ -96,4 +96,44 @@ int main(){
 		cout<<vec[i];
 	}
 	cout<<endl;
+	//putting Error at Random position and detecting that position
+	y =rand()%(nc+r);
+	while(CHECK_BIT(mdata,y)!=0)y=rand()%(nc+r);
+	temp=1;
+	temp<<=y;
+	mdata|=temp;
+	y=0;
+	 rdata=mdata;
+	vec.clear();
+	cout<<"Erronous Data : ";
+	while(rdata>0)
+	{
+		y = rdata&1;
+		vec.push_back(y);
+		rdata>>=1;
+	}	
+	for(int i=vec.size()-1;i>=0;i--)
+	{
+		cout<<vec[i];
+	}
+	cout<<endl;
+	//position is deleted. I haven't stored it any other variable
+	int ep=0;
+	count=0;
+	for(it=m.begin();it!=m.end();it++){
+		vec = it->second;
+		count=0;
+		for(int i=0;i<vec.size();i++){
+				if(CHECK_BIT(mdata,vec[i]-1))
+					count++;
+			
+		}
+		if(parity==1&& count%2==0){
+				ep+=pow(2,it->first-1);
+		}
+		else if(parity == 2 && count%2!=0){
+			ep+=pow(2,it->first-1);
+		}
+	}
+	cout<<"Error possition :"<<ep<<endl;
 }
