@@ -98,6 +98,7 @@ int main(){
 	cout<<endl;
 	//putting Error at Random position and detecting that position
 	y =rand()%(nc+r);
+	y =rand()%(nc+r);
 	while(CHECK_BIT(mdata,y)!=0)y=rand()%(nc+r);
 	temp=1;
 	temp<<=y;
@@ -135,5 +136,5 @@ int main(){
 			ep+=pow(2,it->first-1);
 		}
 	}
-	cout<<"Error possition :"<<ep<<endl;
+	cout<<"Error possition(from last) :"<<ep<<endl;
 }
