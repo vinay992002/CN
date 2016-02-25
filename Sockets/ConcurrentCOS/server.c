@@ -27,7 +27,7 @@ int main(){
 		printf("socket error!!\n");
 		exit(0);
 	}	
-	// to initialie the server address
+	// to initclose(nsfd);ialie the server address
 	bzero((char *) &serv_addr,sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(portno);//htons  converts a port number in host byte order to a port number in network byte order
