@@ -48,9 +48,7 @@ int recv_fd(
 
      // if((res = recvmsg(socket, &message, 0)) <= 0)
          // printf("Does not receive\n");
-    if(recvmsg(socket, &message, 0)<0){
-      perror("recvmsg\n");
-    }
+    recvmsg(socket, &message, 0);
   
      /* Iterate through header to find if there is a file descriptor */
      control_message = CMSG_FIRSTHDR(&message);
@@ -172,38 +170,37 @@ int main(){
       bzero((struct sockaddr_un*)&userv_addr,sizeof(userv_addr));
     userv_addr.sun_family = AF_UNIX;
     char socks[15];
-    sprintf(socks,"%s","skservc");
+    sprintf(socks,"%s","skservcs");
     strcpy(userv_addr.sun_path,socks);
     int len = strlen(userv_addr.sun_path) + sizeof(userv_addr.sun_family);
     if(connect(usfd,(struct sockaddr*)&userv_addr,len)<0){
       printf("connect error!!\n");
       exit(0);
     }
-    printf("it is connected to TIC\n");
+    printf("connected to Multiplex C\n");
     int csfd= socket (AF_UNIX,SOCK_STREAM,0);
-    
      bzero((struct sockaddr_un*)&local,sizeof(local));
     local.sun_family = AF_UNIX;
      bzero(socks,15);
-    sprintf(socks,"%s","skservcs");
+    sprintf(socks,"%s","skservsep");
     strcpy(local.sun_path,socks);
     unlink(local.sun_path);
     len = strlen(local.sun_path) + sizeof(local.sun_family);
-  if(bind(csfd,(struct sockaddr*)&local,len)<0){
-    perror("bind error!!\n");
+  if(bind(csfd,(struct sockaddr*)&local,sizeof(local))<0){
+    printf("bind error!!\n");
     exit(0);
   }   
   int cllen=0;
   listen(csfd,5);
   pthread_t pd;
   pthread_create(&pd,NULL,serv,(void*)&cllen);
-  int x=0;
-  int ncsfd = accept(csfd,(struct sockaddr*)&remote,&x);
+  printf("please start Multiplex E\n");
+  int ncsfd = accept(csfd,(struct sockaddr*)&remote,&cllen);
   if(ncsfd <0){
-    perror(" ok accpet error \n");
+    perror("accpet error!!\n");
     exit(0);
   }
-    
+      printf("connected to Multiplex E\n");
     while(1){
       int sfd = recv_fd(usfd);
       printf("client recieved");

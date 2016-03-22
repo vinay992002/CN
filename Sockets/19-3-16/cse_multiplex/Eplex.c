@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -48,10 +49,10 @@ int recv_fd(
 
      // if((res = recvmsg(socket, &message, 0)) <= 0)
          // printf("Does not receive\n");
-    if(recvmsg(socket, &message, 0)<0){
-      perror("recvmsg\n");
-    }
-  
+   if( recvmsg(socket, &message, 0)<0){
+    perror("recvmsg!!\n");
+   }
+
      /* Iterate through header to find if there is a file descriptor */
      control_message = CMSG_FIRSTHDR(&message);
       if((control_message->cmsg_level == SOL_SOCKET) &&
@@ -64,7 +65,7 @@ int recv_fd(
       return sd;
       }
      
-      return -1;
+ return -1;
 }
 static int send_fd(
   int socket, /* Socket through which the file descriptor is passed */
@@ -172,44 +173,54 @@ int main(){
       bzero((struct sockaddr_un*)&userv_addr,sizeof(userv_addr));
     userv_addr.sun_family = AF_UNIX;
     char socks[15];
-    sprintf(socks,"%s","skservc");
+    sprintf(socks,"%s","skserve");
     strcpy(userv_addr.sun_path,socks);
     int len = strlen(userv_addr.sun_path) + sizeof(userv_addr.sun_family);
     if(connect(usfd,(struct sockaddr*)&userv_addr,len)<0){
       printf("connect error!!\n");
       exit(0);
     }
-    printf("it is connected to TIC\n");
+    printf("connected to TIC\n");
     int csfd= socket (AF_UNIX,SOCK_STREAM,0);
-    
      bzero((struct sockaddr_un*)&local,sizeof(local));
     local.sun_family = AF_UNIX;
      bzero(socks,15);
-    sprintf(socks,"%s","skservcs");
+    sprintf(socks,"%s","skservsep");
     strcpy(local.sun_path,socks);
-    unlink(local.sun_path);
+  
     len = strlen(local.sun_path) + sizeof(local.sun_family);
-  if(bind(csfd,(struct sockaddr*)&local,len)<0){
-    perror("bind error!!\n");
+    printf("connecting to multiplex S\n");
+  if(connect(csfd,(struct sockaddr*)&local,len)<0){
+    printf("connect error!!\n");
     exit(0);
   }   
+  printf("connected to Multiplex S");
   int cllen=0;
   listen(csfd,5);
   pthread_t pd;
   pthread_create(&pd,NULL,serv,(void*)&cllen);
-  int x=0;
-  int ncsfd = accept(csfd,(struct sockaddr*)&remote,&x);
-  if(ncsfd <0){
-    perror(" ok accpet error \n");
-    exit(0);
-  }
+  
     
     while(1){
       int sfd = recv_fd(usfd);
       printf("client recieved");
       if(l>=1){
-        printf("Transferring client\n");
-        send_fd(ncsfd,sfd);
+        printf("Multiplexes are full...\n");
+        int leng;
+        struct ucred ucr;
+
+        leng = sizeof(struct ucred);
+
+        if (getsockopt(usfd,SOL_SOCKET, SO_PEERCRED, &ucr, &leng) == -1) {
+    //getsockopt failed
+
+            exit(0);
+            }
+        printf("Credentials from SO_PEERCRED: pid=%ld, euid=%ld, egid=%ld\n",
+                      (long) ucr.pid, (long) ucr.uid, (long) ucr.gid);
+          sleep(2);
+          kill(ucr.pid,SIGUSR1);
+
       }
       else
       {
