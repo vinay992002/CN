@@ -82,7 +82,7 @@ void *serv(void *num){
 		maxfd =0;
 		if(l>0){
 		FD_ZERO(&readfd);
-		printf("%d",l);
+		//printf("%d",l);
 		for(i=0;i<l;i++)
 		{
 			FD_SET(fds[i],&readfd);

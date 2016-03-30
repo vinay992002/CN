@@ -121,7 +121,8 @@ int recv_fd(
 }
 
 
-int main(){
+int main()
+{
     FILE *f;
     int sfd = socket(AF_UNIX,SOCK_STREAM,0);
     struct sockaddr_un serv_addr,remote;

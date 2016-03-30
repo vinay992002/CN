@@ -185,7 +185,7 @@ int main(){
      bzero((struct sockaddr_un*)&local,sizeof(local));
     local.sun_family = AF_UNIX;
      bzero(socks,15);
-    sprintf(socks,"%s","skservsep");
+    sprintf(socks,"%s","sksep");
     strcpy(local.sun_path,socks);
   
     len = strlen(local.sun_path) + sizeof(local.sun_family);
