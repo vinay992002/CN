@@ -195,7 +195,8 @@ int main(){
   pthread_t pd;
   pthread_create(&pd,NULL,serv,(void*)&cllen);
   printf("please start Multiplex E\n");
-  int ncsfd = accept(csfd,(struct sockaddr*)&remote,&cllen);
+  int x =0;
+  int ncsfd = accept(csfd,(struct sockaddr*)&remote,&x);
   if(ncsfd <0){
     perror("accpet error!!\n");
     exit(0);

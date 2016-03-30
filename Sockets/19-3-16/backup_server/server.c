@@ -163,7 +163,7 @@ int main(){
     	if(fds[l-1]<0){
     		printf("accept error!!\n");
     		exit(0);
-    	}
+   		}
     	if(l > 2){
     		break;
     	}

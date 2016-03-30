@@ -130,7 +130,8 @@ void *serv(void *num){
 		
 	}	}
 }
-int main(int argc,char *argv[]){
+int main(int argc,char *argv[])
+{
 	struct sockaddr_un userv_addr,ucli_addr;
 	pthread_mutex_init(&mutex,0);
 	printf("yaar yeh kyu ni chal raha\n");

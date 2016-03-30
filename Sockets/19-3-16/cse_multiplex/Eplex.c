@@ -169,19 +169,9 @@ void *serv(void *num){
 int main(){
   struct sockaddr_un  userv_addr,local,remote;
   int usfd;
-  usfd = socket(AF_UNIX,SOCK_STREAM,0);
-      bzero((struct sockaddr_un*)&userv_addr,sizeof(userv_addr));
-    userv_addr.sun_family = AF_UNIX;
-    char socks[15];
-    sprintf(socks,"%s","skserve");
-    strcpy(userv_addr.sun_path,socks);
-    int len = strlen(userv_addr.sun_path) + sizeof(userv_addr.sun_family);
-    if(connect(usfd,(struct sockaddr*)&userv_addr,len)<0){
-      printf("connect error!!\n");
-      exit(0);
-    }
-    printf("connected to TIC\n");
-    int csfd= socket (AF_UNIX,SOCK_STREAM,0);
+  char socks[15];
+  int len;
+   int csfd= socket (AF_UNIX,SOCK_STREAM,0);
      bzero((struct sockaddr_un*)&local,sizeof(local));
     local.sun_family = AF_UNIX;
      bzero(socks,15);
@@ -190,19 +180,35 @@ int main(){
   
     len = strlen(local.sun_path) + sizeof(local.sun_family);
     printf("connecting to multiplex S\n");
-  if(connect(csfd,(struct sockaddr*)&local,len)<0){
+    int y;
+    if(connect(csfd,(struct sockaddr*)&local,len)<0){
     printf("connect error!!\n");
     exit(0);
   }   
   printf("connected to Multiplex S");
+  usfd = socket(AF_UNIX,SOCK_STREAM,0);
+      bzero((struct sockaddr_un*)&userv_addr,sizeof(userv_addr));
+    userv_addr.sun_family = AF_UNIX;
+    
+    sprintf(socks,"%s","skserve");
+    strcpy(userv_addr.sun_path,socks);
+     len = strlen(userv_addr.sun_path) + sizeof(userv_addr.sun_family);
+    if(connect(usfd,(struct sockaddr*)&userv_addr,len)<0){
+      printf("connect error!!\n");
+      exit(0);
+    }
+   printf("connected to TIC\n");
+
+
   int cllen=0;
-  listen(csfd,5);
+  //listen(csfd,5);
   pthread_t pd;
   pthread_create(&pd,NULL,serv,(void*)&cllen);
   
     
     while(1){
-      int sfd = recv_fd(usfd);
+      printf("working\n");
+      int sfd = recv_fd(csfd);
       printf("client recieved");
       if(l>=1){
         printf("Multiplexes are full...\n");
