@@ -45,7 +45,7 @@ int main(){
 	 
 	 //strcpy(packet+sizeof(struct iphdr),msg);
 	 //ip->tot_len = htons(sizeof(struct iphdr));
-	 sprintf(packet,"%s","hello");
+	 sprintf(packet,"%s","hi");
 	 if(sendto(rsfd_send,(char *)packet,sizeof(packet),0,(struct sockaddr *)&saddr,(socklen_t)sizeof(saddr))<0){
 	 	perror("packet send error!!\n");
 	 	exit(0);

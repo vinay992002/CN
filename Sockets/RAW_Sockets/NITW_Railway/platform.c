@@ -10,7 +10,6 @@
 #include <stropts.h>
 #include <string.h>
 #include <fcntl.h>
-#include <curses.h>
 #include <sys/un.h>
 #include <unistd.h>
 #include <sys/select.h>
@@ -209,6 +208,8 @@ int main(int argc,char *argv[])
             }
             kill(ucr.pid,SIGUSR1);
            send(nsfd,buf,strlen(buf),0);
+           send(nsfd,buf,strlen(buf),0);
+           
             printf("Train leaving station\n");
             
            
