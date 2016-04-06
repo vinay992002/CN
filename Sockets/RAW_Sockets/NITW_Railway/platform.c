@@ -102,6 +102,40 @@ void *serv(void *num){
 	
 }
 }
+void *announcemect(void *num){
+	int rsfd = socket(AF_INET,SOCK_RAW,251);
+	if(rsfd<0){
+		perror("socket error!!\n");
+		exit(0);
+	}	
+	struct sockaddr_in saddr;
+	char packet[100];
+
+	saddr.sin_family = AF_INET;
+	saddr.sin_port = 0;
+	inet_pton(AF_INET,"127.0.0.1",(struct in_addr*)&saddr.sin_addr.s_addr);
+
+	bzero(saddr.sin_zero,sizeof(saddr.sin_zero));
+	while(1){
+	bzero(packet,50);
+	socklen_t *len = (socklen_t *)sizeof(saddr);
+	int llen = sizeof(saddr);
+	int n;
+
+	if((n=recvfrom(rsfd,(char *)&packet,sizeof(packet),0,(struct sockaddr *)&saddr,&llen))<0){
+		perror("packet recieve error!!\n");
+		exit(0);
+	}
+	int i = sizeof(struct iphdr);
+	printf("\n--------Announcement--------\n");
+	for(;i<n;i++){
+		printf("%c",packet[i]);
+	}
+	printf("\n\n");
+	
+	
+}
+}
 int main(int argc,char *argv[])
 {
 	printf("%d\n", argc);
@@ -139,10 +173,11 @@ int main(int argc,char *argv[])
     	printf("accept error!!\n");
     	exit(0);
     }
-    pthread_t pd;
+    pthread_t pd,pd2;
     int x=0;
     //printf("noooooo-------------------------------------------------\n");
    pthread_create(&pd,NULL,serv,(void*)&x);
+   pthread_create(&pd2,NULL,announcemect,(void*)&x);
     //printf("yessss--------------------------------------------------\n");
     	//printf("wrongggg\n");
     	//pthread_mutex_lock(&mutex);
@@ -152,7 +187,7 @@ int main(int argc,char *argv[])
        char tr[10];
        bzero(tr,10);
        recv(nsfd,tr,10,0);
-       printf("train from %s arriving at station %c\n",tr,argv[1][6]);
+       printf("train from %s arriving at station %c\n",tr,argv[1][0]);
         fds=recv_fd(nsfd);
         printf("fd recieved\n");
        //printf("--->%d\n",fds);
@@ -172,7 +207,7 @@ int main(int argc,char *argv[])
     //getsockopt failed
             exit(0);
             }
-           // kill(ucr.pid,SIGUSR1);
+            kill(ucr.pid,SIGUSR1);
            send(nsfd,buf,strlen(buf),0);
             printf("Train leaving station\n");
             

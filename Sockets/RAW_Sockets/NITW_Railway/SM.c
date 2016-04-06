@@ -2,12 +2,14 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stropts.h>
 #include <string.h>
 #include <fcntl.h>
+#include <arpa/inet.h>
 #include <curses.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -52,15 +54,15 @@ static int send_fd(
 }
 int status[3]={0};
 int usfd[3];
-void *handler(void *num){
+void handler(){
        int i=0,st;
-       printf("\n------------handler is on------------\n");
+       printf("\n------------train left station------------\n");
 	fd_set rdfd;
 	
 	struct timeval t;
 	t.tv_sec = 2;
 	t.tv_usec = 100;
-	while(1){
+	
 	int maxfd =0;
 	FD_ZERO(&rdfd);
 	for(i=0;i<3;i++)
@@ -78,7 +80,7 @@ void *handler(void *num){
 				printf("platform %d is now vaccant\n",i);
 			}
 		}
-	}
+	
 }
 }
 int main(){
@@ -88,6 +90,11 @@ int main(){
 	struct sockaddr_in serv_addr[3],cli_addr;
 	struct sockaddr_un  userv_addr[3],ucli_addr;
 	int i=0;
+	int rsfd_send = socket(AF_INET,SOCK_RAW,251);
+	if(rsfd_send<0){
+		perror("socket!!\n");
+		exit(0);
+	}
 	int sfd[3];
 	char socks[15];
 	for(i=0;i<3;i++){
@@ -129,9 +136,12 @@ int main(){
 	int maxfd =0;
 	int nsfd;
 	pthread_t pd;
-	pthread_create(&pd,NULL,handler,(void*)&maxfd);
-
-	//signal(SIGUSR1,handler);
+	//pthread_create(&pd,NULL,handler,(void*)&maxfd);
+	struct sockaddr_in saddr1;
+	signal(SIGUSR1,handler);
+	 saddr1.sin_family = AF_INET;
+	 saddr1.sin_port=0;
+	 inet_pton(AF_INET,"127.0.0.1",(struct in_addr*)&saddr1.sin_addr.s_addr);
 	char *stations[] = {"delhi","vijaywada","hyderabad"};
 	while(1){
 		maxfd=0;
@@ -173,6 +183,14 @@ int main(){
 					printf("unix connection succesfull\n");
 					send(usfd[j],stations[j],strlen(stations[j]),0);
 					printf("sending fd\n");
+					 memset(saddr1.sin_zero,0,sizeof(saddr1.sin_zero));
+	 				char packet[100];
+	 				bzero(packet,sizeof(packet));
+	 				sprintf(packet,"%s%s%s%d","train from ",stations[j]," is arriving on platform no. ",j);
+	 				if(sendto(rsfd_send,(char *)packet,sizeof(packet),0,(struct sockaddr *)&saddr1,(socklen_t)sizeof(saddr1))<0){
+	 					perror("packet send error!!\n");
+	 					exit(0);
+	 				}
 					sleep(1);
 					send_fd(usfd[j],nsfd);
 					printf("fd sent\n");

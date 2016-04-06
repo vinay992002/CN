@@ -33,6 +33,6 @@ int main(){
 	 	perror("packet send error!!\n");
 	 	exit(0);
 	 }
-	 sleep(3);
+	 sleep(6);
 }
 }
