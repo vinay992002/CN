@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/select.h>
+#include <pthread.h>
 #include <sys/wait.h>
 int portno[3]={8001,8002,8003};
 static int send_fd(
@@ -49,23 +50,36 @@ static int send_fd(
 
  return sendmsg(socket, &message, 0);
 }
-int proids[3]={-1};
 int status[3]={0};
-void handler(){
+int usfd[3];
+void *handler(void *num){
        int i=0,st;
        printf("\n------------handler is on------------\n");
+	fd_set rdfd;
+	
+	struct timeval t;
+	t.tv_sec = 2;
+	t.tv_usec = 100;
+	while(1){
+	int maxfd =0;
+	FD_ZERO(&rdfd);
 	for(i=0;i<3;i++)
 	{
-		if(status[i]==1){
-		pid_t result = waitpid(proids[i], &st, WNOHANG);	
-		if(result >0)
-		{
-			proids[i]=-1;
-			status[i]=0;
-			break;
+        FD_SET(usfd[i],&rdfd);
+        maxfd = maxfd>usfd[i] ? maxfd:usfd[i];
+	}
+	int ret = select(maxfd+1,&rdfd,NULL,NULL,&t);
+	if(ret>0){
+		char buf[10];
+		bzero(buf,10);
+		for(i=0;i<3;i++){
+			if(FD_ISSET(usfd[i],&rdfd)){
+				status[i]=0;
+				printf("platform %d is now vaccant\n",i);
+			}
 		}
 	}
-	}
+}
 }
 int main(){
 	fd_set readfd;
@@ -76,8 +90,6 @@ int main(){
 	int i=0;
 	int sfd[3];
 	char socks[15];
-	int usfd[3];
-
 	for(i=0;i<3;i++){
 		sfd[i] = socket(AF_INET,SOCK_STREAM,0);
 		usfd[i] = socket(AF_UNIX,SOCK_STREAM,0);
@@ -107,10 +119,19 @@ int main(){
 		exit(0);
 	}
 	listen(sfd[i],5);
+		
+					 int len = strlen(userv_addr[i].sun_path) + sizeof(userv_addr[i].sun_family);
+					if(connect(usfd[i],(struct sockaddr*)&userv_addr[i],len)<0){
+						printf("connect error!!\nplease start platform %d\n",i);
+						exit(0);
+					}
 	}
 	int maxfd =0;
 	int nsfd;
-	signal(SIGUSR1,handler);
+	pthread_t pd;
+	pthread_create(&pd,NULL,handler,(void*)&maxfd);
+
+	//signal(SIGUSR1,handler);
 	char *stations[] = {"delhi","vijaywada","hyderabad"};
 	while(1){
 		maxfd=0;
@@ -147,22 +168,8 @@ int main(){
 						sprintf(socks,"%s","helo");
 						send(nsfd,socks,strlen(socks),0);
 						status[j]=1;
-						if((proids[j]=fork())==0){
-							char sev[10];
-							sprintf(sev,"%s%d",se,j);
-							bzero(socks,15);
-							sprintf(socks,"%s%d","skserv",j);
-							printf("%s\n",socks );
-							execlp(sev,sev,socks,NULL);
-							printf("exec error!!\n");
-						}
-						sleep(2);
-						bzero((struct sockaddr_un *)&ucli_addr,sizeof(ucli_addr));
-					 int len = strlen(userv_addr[j].sun_path) + sizeof(userv_addr[j].sun_family);
-					if(connect(usfd[j],(struct sockaddr*)&userv_addr[j],len)<0){
-						printf("connect error!!\n");
-						exit(0);
-					}
+						
+					
 					printf("unix connection succesfull\n");
 					send(usfd[j],stations[j],strlen(stations[j]),0);
 					printf("sending fd\n");

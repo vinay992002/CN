@@ -98,12 +98,17 @@ void *serv(void *num){
 	for(;i<n;i++){
 		printf("%c",packet[i]);
 	}
-	printf("\n------------------------------");
-	printf("\n");
+	printf("\n------------------------------\n");
+	
 }
 }
 int main(int argc,char *argv[])
 {
+	printf("%d\n", argc);
+	if(argc<2){
+		printf("usage:-  ./pl <platform no.>");
+		exit(0);
+	}
 	struct sockaddr_un userv_addr,ucli_addr;
 	pthread_mutex_init(&mutex,0);
 	//printf("yaar yeh kyu ni chal raha\n");
@@ -117,8 +122,9 @@ int main(int argc,char *argv[])
 		bzero((struct sockaddr_un*)&userv_addr,sizeof(userv_addr));
   	userv_addr.sun_family = AF_UNIX;
 	bzero(socks,15);
+	sprintf(socks,"%s%s","skserv",argv[1]);
   	//sprintf(socks,"%s%d","skserv",i);
-  	strcpy(userv_addr.sun_path,argv[1]);
+  	strcpy(userv_addr.sun_path,socks);
   	//strncpy(serv_addr.sun_path, "socket", sizeof(serv_addr.sun_path)-1);
     unlink(userv_addr.sun_path);
     int len = strlen(userv_addr.sun_path) + sizeof(userv_addr.sun_family);
@@ -142,14 +148,14 @@ int main(int argc,char *argv[])
     	//pthread_mutex_lock(&mutex);
 
     	//printf("Train arrived..\n");
-
+   while(1){
        char tr[10];
        bzero(tr,10);
        recv(nsfd,tr,10,0);
        printf("train from %s arriving at station %c\n",tr,argv[1][6]);
         fds=recv_fd(nsfd);
         printf("fd recieved\n");
-       printf("--->%d\n",fds);
+       //printf("--->%d\n",fds);
        char buf[128];
        //sleep(2);
        while(1){
@@ -166,14 +172,17 @@ int main(int argc,char *argv[])
     //getsockopt failed
             exit(0);
             }
-            kill(ucr.pid,SIGUSR1);
+           // kill(ucr.pid,SIGUSR1);
+           send(nsfd,buf,strlen(buf),0);
             printf("Train leaving station\n");
-            sleep(2);
-            exit(0);
+            
+           
+           sleep(2);
+           break;
        	}
        	printf("%s\n",buf);
        }
-       sleep(10);	
+       }	
     	//pthread_mutex_unlock(&mutex);
 	//	pthread_join(pd,NULL);
 }
