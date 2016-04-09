@@ -16,6 +16,14 @@ rpcgen -a -C filename.x
 
 It will generate 10 files. now we have to change just two files. client and server file according to our use.
 
+after changing type the following command to compile the program.
+
+make -f Makefile.<filename> 
+
+example for square prog.
+
+make -f Makefile.square    
+
 to run the prog.
 
 type 
